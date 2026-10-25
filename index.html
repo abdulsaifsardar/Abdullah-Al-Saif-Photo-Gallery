@@ -53,9 +53,10 @@
             position: relative;
             overflow: hidden;
             text-align: center;
-            margin: 0 auto 30px;
-            max-width: 1320px;
-            padding: clamp(34px, 6vw, 68px) 22px;
+            margin: 0 auto 22px;
+            width: 100%;
+            max-width: 1000px;
+            padding: 14px 20px;
             border: 1px solid rgba(162, 125, 91, .22);
             border-radius: 26px;
             background: radial-gradient(ellipse at top, #fffdf8 0%, #f2e5d5 70%, #ead7c2 100%);
@@ -77,8 +78,8 @@
             display: inline-grid;
             place-items: center;
             width: 48px;
-            height: 48px;
-            margin-bottom: 12px;
+            height: 34px;
+            margin-bottom: 4px;
             border-radius: 50%;
             background: #ead5c0;
             color: #965f47;
@@ -89,8 +90,8 @@
             position: relative;
             z-index: 1;
             font-size: clamp(1.7rem, 4.5vw, 3.15rem);
-            line-height: 1.45;
-            margin-bottom: 10px;
+            line-height: 1.15;
+            margin-bottom: 4px;
             color: #4c382b;
         }
 
@@ -99,13 +100,13 @@
             z-index: 1;
             color: #846c5a;
             font-size: clamp(.92rem, 2vw, 1.08rem);
-            line-height: 1.8;
+            line-height: 1.35;
         }
 
         .header-note {
             position: relative;
             z-index: 1;
-            margin-top: 18px;
+            margin-top: 6px;
             color: #9a765e;
             font-size: 13px;
         }
@@ -256,9 +257,9 @@
             body { padding: 12px; }
             .topbar { margin-bottom: 10px; }
             .login-tab { padding: 10px 14px; font-size: 13px; }
-            header { border-radius: 18px; margin-bottom: 20px; padding: 34px 15px; }
-            .header-heart { width: 40px; height: 40px; font-size: 21px; }
-            .header-note { font-size: 11px; }
+            header { width: 100%; max-width: 100%; border-radius: 18px; margin-bottom: 14px; padding: 12px 10px; }
+            .header-heart { width: 30px; height: 30px; font-size: 18px; margin-bottom: 3px; }
+            .header-note { font-size: 11px; margin-top: 5px; }
             .login-panel { padding: 17px; border-radius: 14px; }
             .action-button { width: 100%; text-align: center; }
 
@@ -272,7 +273,7 @@
             }
 
             .photo-card img {
-                height: 180px;
+                height: clamp(140px, 42vw, 220px);
             }
 
             .photo-name {
@@ -291,9 +292,34 @@
 
 <body>
 
+    <div class="topbar">
+        <button class="login-tab" id="login-tab" type="button" aria-expanded="false" aria-controls="login-panel">Admin Login</button>
+    </div>
+
+    <section class="login-panel" id="login-panel" aria-label="Admin login">
+        <h2>অ্যাডমিন লগইন</h2>
+        <p>ছবি যোগ করতে GitHub-এর images ফোল্ডারে যান। লগইন করার পর নিচে GitHub বাটনটি দেখা যাবে।</p>
+        <form id="login-form">
+            <label for="admin-password">Password</label>
+            <input class="password-input" id="admin-password" type="password" autocomplete="current-password" placeholder="পাসওয়ার্ড লিখুন" required>
+            <button class="login-submit" type="submit">Login</button>
+            <div class="login-error" id="login-error" role="status" aria-live="polite"></div>
+        </form>
+        <div class="admin-tools" id="admin-tools">
+            <a class="action-button" href="https://github.com/abdulsaifsardar/Abdullah-Al-Saif-Photo-Gallery/tree/main/images" target="_blank" rel="noopener noreferrer">GitHub Images — Click to Upload</a>
+            <div class="account-note">
+                <div><strong>GitHub:</strong> abdulsaifsardar@gmail.com</div>
+                <div><strong>Netlify:</strong> maidulislamsardar1@gmail.com</div>
+                <p>নতুন ছবি GitHub-এর <strong>images</strong> ফোল্ডারে আপলোড করুন। এই গ্যালারি GitHub থেকে ছবির সরাসরি URL নেবে।</p>
+            </div>
+        </div>
+    </section>
+
     <header>
-        <h1>আমার শৈশব থেকে বর্তমানের গল্প</h1>
-        <p>স্মৃতির পাতায় রাখা সকল মুহূর্ত</p>
+        <span class="header-heart" aria-hidden="true">♥</span>
+        <h1>আমাদের পরিবারের গল্প</h1>
+        <p>ভালোবাসা, স্মৃতি আর একসাথে কাটানো মুহূর্ত</p>
+        <div class="header-note">♡ আমাদের ছোট্ট পৃথিবী ♡</div>
     </header>
 
     <main>
@@ -418,8 +444,8 @@
             img.alt = "স্মৃতির ছবি: " + fileName;
             img.loading = "lazy";
             img.decoding = "async";
-            // GitHub থেকে পাওয়া নাম ব্যবহার করে Netlify-তে থাকা ছবির path তৈরি করা হচ্ছে।
-            img.src = "/images/" + fileName.split("/").map(encodeURIComponent).join("/");
+            // GitHub API-এর সরাসরি ছবির URL ব্যবহার করি; এতে Netlify deploy-তে /images কপি থাকা জরুরি নয়।
+            img.src = file.download_url || ("https://raw.githubusercontent.com/abdulsaifsardar/Abdullah-Al-Saif-Photo-Gallery/main/images/" + encodeURIComponent(fileName));
 
             const caption = document.createElement("div");
             caption.className = "photo-name";
@@ -441,7 +467,7 @@
                 const message = document.createElement("strong");
                 message.textContent = "ছবি লোড করা যায়নি";
                 const details = document.createElement("small");
-                details.textContent = "ফাইলটি Netlify deploy-তে আছে কি না পরীক্ষা করুন: /images/" + fileName;
+                details.textContent = "GitHub-এর images ফোল্ডারে ফাইলটি আছে কি না এবং ফাইলের নাম/extension ঠিক কি না পরীক্ষা করুন: " + fileName;
                 errorBox.append(message, details);
                 img.replaceWith(errorBox);
                 updateStatus();
