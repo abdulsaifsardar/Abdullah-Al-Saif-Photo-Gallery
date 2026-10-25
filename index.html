@@ -40,11 +40,6 @@
             object-fit: cover;
             display: block;
         }
-        .loading-text {
-            font-size: 1.2rem;
-            color: #555;
-            margin-top: 40px;
-        }
     </style>
 </head>
 <body>
@@ -54,11 +49,10 @@
         <p>স্মৃতির পাতায় রাখা সকল মুহূর্ত</p>
     </header>
 
-    <div id="loading" class="loading-text" style="display: none;">ছবি লোড হচ্ছে...</div>
     <div class="gallery" id="image-gallery"></div>
 
     <script>
-        // আপনার ফোল্ডারে থাকা ছবিগুলোর সঠিক নাম এখানে দেওয়া হলো
+        // ফোল্ডারে থাকা ছবির নামসমূহ
         const imageNames = [
             "1.jpg",
             "2.jpg",
@@ -66,39 +60,21 @@
             "4.jpg"
         ];
 
-        const username = 'abdulsafsardar';
-        const repo = 'Abdullah-Al-Saif-Photo-Gallery';
-        const branch = 'main';
-
         const galleryElement = document.getElementById('image-gallery');
 
-        function loadGallery() {
-            if (imageNames.length === 0) {
-                galleryElement.innerHTML = '<p>কোনো ছবি পাওয়া যায়নি।</p>';
-                return;
-            }
+        imageNames.forEach(fileName => {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
 
-            imageNames.forEach(fileName => {
-                const card = document.createElement('div');
-                card.className = 'photo-card';
+            const img = document.createElement('img');
+            // সরাসরি লোকাল ফোল্ডার পাথ
+            img.src = `./images/${fileName}`;
+            img.alt = fileName;
+            img.loading = 'lazy';
 
-                const img = document.createElement('img');
-                // সরাসরি GitHub Raw লিংক
-                img.src = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/images/${fileName}`;
-                img.alt = fileName;
-                img.loading = 'lazy';
-
-                // যদি ছবি কোনো কারণে লোড না হয়, তার বিকল্প হ্যান্ডলিং
-                img.onerror = function() {
-                    this.src = `https://github.com/${username}/${repo}/raw/${branch}/images/${fileName}`;
-                };
-
-                card.appendChild(img);
-                galleryElement.appendChild(card);
-            });
-        }
-
-        loadGallery();
+            card.appendChild(img);
+            galleryElement.appendChild(card);
+        });
     </script>
 
 </body>
