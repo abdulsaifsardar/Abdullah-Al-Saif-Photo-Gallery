@@ -58,12 +58,12 @@
     <div class="gallery" id="image-gallery"></div>
 
     <script>
+        // আপনার ফোল্ডারে থাকা ছবিগুলোর নতুন নাম এখানে দেওয়া হলো
         const imageNames = [
-            "alamin.jpg",
-            "Amin Sarker.jpg",
-            "Habib Sir.jpg",
-            "likhon.jfif",
-            "Mahin.jfif"
+            "1.jpg",
+            "2.jpg",
+            "3.jfif",
+            "4.jpg"
         ];
 
         const username = 'abdulsafsardar';
@@ -86,9 +86,7 @@
                 card.className = 'photo-card';
 
                 const img = document.createElement('img');
-                // সঠিক এনকোডিং ব্যবহার করে জাস্ট লিংকে রূপান্তর করা হলো
-                const encodedFileName = fileName.split('/').map(encodeURIComponent).join('/');
-                img.src = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/images/${encodedFileName}`;
+                img.src = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/images/${fileName}`;
                 img.alt = fileName;
                 img.loading = 'lazy';
 
