@@ -178,11 +178,7 @@
         }
 
         .photo-name {
-            padding: 12px;
-            text-align: center;
-            color: #526273;
-            font-size: 14px;
-            overflow-wrap: anywhere;
+            display: none; /* ছবির নিচে ফাইলের নাম দেখাবে না */
         }
 
         .status {
@@ -232,6 +228,39 @@
             object-fit: contain;
         }
 
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+            border: 0;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            background: rgba(255,255,255,.18);
+            font-size: 30px;
+            line-height: 1;
+            cursor: pointer;
+            user-select: none;
+        }
+        .lightbox-nav:hover { background: rgba(255,255,255,.32); }
+        .lightbox-prev { left: 18px; }
+        .lightbox-next { right: 18px; }
+        .lightbox-counter {
+            position: absolute;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 13px;
+            background: rgba(0,0,0,.45);
+            padding: 5px 10px;
+            border-radius: 999px;
+        }
+
         .close-button {
             position: absolute;
             top: 14px;
@@ -276,10 +305,12 @@
                 height: clamp(140px, 42vw, 220px);
             }
 
-            .photo-name {
-                padding: 9px 5px;
-                font-size: 12px;
-            }
+            .photo-name { display: none; }
+            .lightbox { padding: 12px; }
+            .lightbox-nav { width: 40px; height: 40px; font-size: 25px; }
+            .lightbox-prev { left: 8px; }
+            .lightbox-next { right: 8px; }
+            .lightbox img { max-width: 100%; max-height: 82vh; }
         }
 
         @media (max-width: 360px) {
@@ -348,7 +379,10 @@
             aria-label="ছবি বন্ধ করুন"
         >×</button>
 
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev" type="button" aria-label="আগের ছবি">‹</button>
         <img id="lightbox-image" src="" alt="বড় আকারের ছবি">
+        <button class="lightbox-nav lightbox-next" id="lightbox-next" type="button" aria-label="পরের ছবি">›</button>
+        <div class="lightbox-counter" id="lightbox-counter" aria-live="polite"></div>
     </div>
 
     <footer>
@@ -367,6 +401,13 @@
         const lightbox = document.getElementById("lightbox");
         const lightboxImage = document.getElementById("lightbox-image");
         const closeButton = document.getElementById("close-lightbox");
+        const previousButton = document.getElementById("lightbox-prev");
+        const nextButton = document.getElementById("lightbox-next");
+        const lightboxCounter = document.getElementById("lightbox-counter");
+        let galleryItems = [];
+        let currentLightboxIndex = -1;
+        let touchStartX = 0;
+        let touchStartY = 0;
         const loginTab = document.getElementById("login-tab");
         const loginPanel = document.getElementById("login-panel");
         const loginForm = document.getElementById("login-form");
@@ -415,25 +456,74 @@
             }
         }
 
-        function showLightbox(imageSource, imageAlt) {
-            lightboxImage.src = imageSource;
-            lightboxImage.alt = imageAlt;
+        function imageUrl(file) {
+            return file.download_url || ("https://raw.githubusercontent.com/abdulsaifsardar/Abdullah-Al-Saif-Photo-Gallery/main/images/" + encodeURIComponent(file.name));
+        }
+
+        function showLightbox(index) {
+            if (!galleryItems.length) return;
+            currentLightboxIndex = (index + galleryItems.length) % galleryItems.length;
+            const file = galleryItems[currentLightboxIndex];
+            lightboxImage.src = imageUrl(file);
+            // ফাইলের নাম ছবির নিচে/উপরে দেখানো হচ্ছে না।
+            lightboxImage.alt = "পরিবারের ছবি " + (currentLightboxIndex + 1);
+            lightboxCounter.textContent = `${currentLightboxIndex + 1} / ${galleryItems.length}`;
             lightbox.classList.add("open");
             closeButton.focus();
+        }
+
+        function showPreviousImage() {
+            if (currentLightboxIndex >= 0) showLightbox(currentLightboxIndex - 1);
+        }
+
+        function showNextImage() {
+            if (currentLightboxIndex >= 0) showLightbox(currentLightboxIndex + 1);
         }
 
         function closeLightbox() {
             lightbox.classList.remove("open");
             lightboxImage.src = "";
+            currentLightboxIndex = -1;
         }
 
         closeButton.addEventListener("click", closeLightbox);
+        previousButton.addEventListener("click", event => { event.stopPropagation(); showPreviousImage(); });
+        nextButton.addEventListener("click", event => { event.stopPropagation(); showNextImage(); });
         lightbox.addEventListener("click", event => {
             if (event.target === lightbox) closeLightbox();
         });
         document.addEventListener("keydown", event => {
+            if (!lightbox.classList.contains("open")) return;
             if (event.key === "Escape") closeLightbox();
+            else if (event.key === "ArrowLeft") { event.preventDefault(); showPreviousImage(); }
+            else if (event.key === "ArrowRight") { event.preventDefault(); showNextImage(); }
+            else if (event.key === "ArrowUp") { event.preventDefault(); showPreviousImage(); }
+            else if (event.key === "ArrowDown") { event.preventDefault(); showNextImage(); }
         });
+        // Lightbox খোলা থাকা অবস্থায় mouse wheel/উপর-নিচ scroll করলে ছবির পরিবর্তন হবে।
+        lightbox.addEventListener("wheel", event => {
+            if (!lightbox.classList.contains("open")) return;
+            event.preventDefault();
+            if (event.deltaY > 0 || event.deltaX > 0) showNextImage();
+            else if (event.deltaY < 0 || event.deltaX < 0) showPreviousImage();
+        }, { passive: false });
+        // Mobile-এ ডানে/বামে swipe করে পরের/আগের ছবি দেখুন।
+        lightbox.addEventListener("touchstart", event => {
+            const touch = event.changedTouches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+        }, { passive: true });
+        lightbox.addEventListener("touchend", event => {
+            if (!lightbox.classList.contains("open")) return;
+            const touch = event.changedTouches[0];
+            const dx = touch.clientX - touchStartX;
+            const dy = touch.clientY - touchStartY;
+            if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0) showNextImage(); else showPreviousImage();
+            } else if (Math.abs(dy) > 55) {
+                if (dy < 0) showNextImage(); else showPreviousImage();
+            }
+        }, { passive: true });
 
         function addImage(file) {
             const fileName = file.name;
@@ -445,7 +535,7 @@
             img.loading = "lazy";
             img.decoding = "async";
             // GitHub API-এর সরাসরি ছবির URL ব্যবহার করি; এতে Netlify deploy-তে /images কপি থাকা জরুরি নয়।
-            img.src = file.download_url || ("https://raw.githubusercontent.com/abdulsaifsardar/Abdullah-Al-Saif-Photo-Gallery/main/images/" + encodeURIComponent(fileName));
+            img.src = imageUrl(file);
 
             const caption = document.createElement("div");
             caption.className = "photo-name";
@@ -474,7 +564,7 @@
                 console.error("Image failed to load:", img.src);
             });
             img.addEventListener("click", () => {
-                if (img.naturalWidth > 0) showLightbox(img.src, img.alt);
+                if (img.naturalWidth > 0) showLightbox(galleryItems.indexOf(file));
             });
             card.append(img, caption);
             gallery.appendChild(card);
@@ -501,6 +591,7 @@
                 }
 
                 totalCount = images.length;
+                galleryItems = images;
                 status.textContent = `মোট ${totalCount}টি ছবির তালিকা পাওয়া গেছে; লোড হচ্ছে...`;
                 images.forEach(addImage);
                 updateStatus();
