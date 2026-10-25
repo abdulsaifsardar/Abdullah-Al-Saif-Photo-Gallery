@@ -54,57 +54,51 @@
         <p>স্মৃতির পাতায় রাখা সকল মুহূর্ত</p>
     </header>
 
-    <div id="loading" class="loading-text">ছবি লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</div>
+    <div id="loading" class="loading-text" style="display: none;">ছবি লোড হচ্ছে...</div>
     <div class="gallery" id="image-gallery"></div>
 
     <script>
+        // আপনার ফোল্ডারে থাকা ছবিগুলোর সঠিক নাম এখানে দেওয়া হলো
+        const imageNames = [
+            "1.jpg",
+            "2.jpg",
+            "3.jfif",
+            "4.jpg"
+        ];
+
         const username = 'abdulsafsardar';
         const repo = 'Abdullah-Al-Saif-Photo-Gallery';
-        const folderPath = 'images';
+        const branch = 'main';
 
         const galleryElement = document.getElementById('image-gallery');
-        const loadingElement = document.getElementById('loading');
 
-        async function fetchImages() {
-            try {
-                const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${folderPath}`);
-                if (!response.ok) {
-                    throw new Error('ফোল্ডার বা ছবি পাওয়া যায়নি!');
-                }
-                const files = await response.json();
-
-                loadingElement.style.display = 'none';
-
-                const imageFiles = files.filter(file => {
-                    const ext = file.name.split('.').pop().toLowerCase();
-                    return ['jpg', 'jpeg', 'png', 'webp', 'gif', 'jfif'].includes(ext);
-                });
-
-                if (imageFiles.length === 0) {
-                    galleryElement.innerHTML = '<p>images ফোল্ডারে কোনো ছবি পাওয়া যায়নি।</p>';
-                    return;
-                }
-
-                imageFiles.forEach(file => {
-                    const card = document.createElement('div');
-                    card.className = 'photo-card';
-
-                    const img = document.createElement('img');
-                    // GitHub-এর অফিশিয়াল কন্টেন্ট ডাউনলোড লিংক ব্যবহার করা হলো যা কখনোই ফেইল করে না
-                    img.src = file.download_url;
-                    img.alt = file.name;
-                    img.loading = 'lazy';
-
-                    card.appendChild(img);
-                    galleryElement.appendChild(card);
-                });
-            } catch (error) {
-                console.error(error);
-                loadingElement.innerText = 'ছবি লোড করতে সমস্যা হয়েছে।';
+        function loadGallery() {
+            if (imageNames.length === 0) {
+                galleryElement.innerHTML = '<p>কোনো ছবি পাওয়া যায়নি।</p>';
+                return;
             }
+
+            imageNames.forEach(fileName => {
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+
+                const img = document.createElement('img');
+                // সরাসরি GitHub Raw লিংক
+                img.src = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/images/${fileName}`;
+                img.alt = fileName;
+                img.loading = 'lazy';
+
+                // যদি ছবি কোনো কারণে লোড না হয়, তার বিকল্প হ্যান্ডলিং
+                img.onerror = function() {
+                    this.src = `https://github.com/${username}/${repo}/raw/${branch}/images/${fileName}`;
+                };
+
+                card.appendChild(img);
+                galleryElement.appendChild(card);
+            });
         }
 
-        fetchImages();
+        loadGallery();
     </script>
 
 </body>
