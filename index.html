@@ -1,47 +1,200 @@
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>আমার ফটো গ্যালারি</title>
+
+    <meta name="description" content="আমার শৈশব থেকে বর্তমানের স্মৃতিময় মুহূর্তগুলোর ফটো গ্যালারি।">
+
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f4f6f9; 
-            padding: 20px; 
-            text-align: center; 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        header { margin-bottom: 30px; }
-        h1 { color: #2c3e50; font-size: 2.2rem; margin-bottom: 8px; }
-        p { color: #7f8c8d; font-size: 1rem; }
-        
+
+        body {
+            font-family: "Noto Sans Bengali", "Segoe UI",
+                         Tahoma, sans-serif;
+            background: #f4f6f9;
+            color: #2c3e50;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin: 0 auto 32px;
+            max-width: 1000px;
+        }
+
+        h1 {
+            font-size: clamp(1.7rem, 4vw, 2.7rem);
+            line-height: 1.5;
+            margin-bottom: 8px;
+            color: #263f56;
+        }
+
+        header p {
+            color: #7f8c8d;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(min(100%, 260px), 1fr)
+            );
+            gap: 22px;
             max-width: 1300px;
             margin: 0 auto;
         }
+
         .photo-card {
             background: #fff;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.25s ease,
+                        box-shadow 0.25s ease;
+            min-width: 0;
         }
+
         .photo-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 9px 24px rgba(0, 0, 0, 0.13);
         }
+
         .photo-card img {
-            width: 100%;
-            height: 260px;
-            object-fit: cover;
             display: block;
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            background: #e9edf2;
+            cursor: zoom-in;
+        }
+
+        .photo-name {
+            padding: 12px;
+            text-align: center;
+            color: #526273;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        .status {
+            text-align: center;
+            padding: 30px 12px;
+            color: #526273;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .error {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #a93226;
+            background: #fff3f1;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        .error small {
+            margin-top: 8px;
+            color: #7b5a56;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.92);
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .lightbox.open {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 88vh;
+            object-fit: contain;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 14px;
+            right: 22px;
+            border: 0;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 28px;
+            color: #fff;
+            background: #303030;
+            cursor: pointer;
+        }
+
+        footer {
+            margin-top: 35px;
+            padding: 15px;
+            text-align: center;
+            color: #87919b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 14px;
+            }
+
+            header {
+                margin-bottom: 24px;
+            }
+
+            .gallery {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .photo-card {
+                border-radius: 10px;
+            }
+
+            .photo-card img {
+                height: 180px;
+            }
+
+            .photo-name {
+                padding: 9px 5px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+
+            .photo-card img {
+                height: 240px;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -49,10 +202,43 @@
         <p>স্মৃতির পাতায় রাখা সকল মুহূর্ত</p>
     </header>
 
-    <div class="gallery" id="image-gallery"></div>
+    <main>
+        <div id="gallery-status" class="status" aria-live="polite">
+            ছবিগুলো লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...
+        </div>
+
+        <section
+            class="gallery"
+            id="image-gallery"
+            aria-label="আমার ছবির গ্যালারি"
+        ></section>
+    </main>
+
+    <div
+        class="lightbox"
+        id="lightbox"
+        role="dialog"
+        aria-modal="true"
+        aria-label="বড় আকারে ছবি দেখুন"
+    >
+        <button
+            class="close-button"
+            id="close-lightbox"
+            type="button"
+            aria-label="ছবি বন্ধ করুন"
+        >×</button>
+
+        <img id="lightbox-image" src="" alt="বড় আকারের ছবি">
+    </div>
+
+    <footer>
+        আমার স্মৃতির অ্যালবাম © <span id="current-year"></span>
+    </footer>
 
     <script>
-        // ফোল্ডারে থাকা ছবির নামসমূহ
+        "use strict";
+
+        // GitHub-এর images ফোল্ডারে থাকা ছবির নাম
         const imageNames = [
             "1.jpg",
             "2.jpg",
@@ -60,21 +246,139 @@
             "4.jpg"
         ];
 
-        const galleryElement = document.getElementById('image-gallery');
+        const gallery = document.getElementById("image-gallery");
+        const status = document.getElementById("gallery-status");
 
-        imageNames.forEach(fileName => {
-            const card = document.createElement('div');
-            card.className = 'photo-card';
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImage = document.getElementById("lightbox-image");
+        const closeButton = document.getElementById("close-lightbox");
 
-            const img = document.createElement('img');
-            // সরাসরি লোকাল ফোল্ডার পাথ
-            img.src = `./images/${fileName}`;
-            img.alt = fileName;
-            img.loading = 'lazy';
+        let loadedCount = 0;
+        let failedCount = 0;
+
+        document.getElementById("current-year").textContent =
+            new Date().getFullYear();
+
+        if (imageNames.length === 0) {
+            status.textContent = "গ্যালারিতে কোনো ছবি যোগ করা হয়নি।";
+        } else {
+            status.textContent = "ছবি লোড হচ্ছে...";
+        }
+
+        function updateStatus() {
+            const total = imageNames.length;
+            const completed = loadedCount + failedCount;
+
+            if (completed < total) {
+                status.textContent =
+                    `ছবি লোড হচ্ছে: ${completed}/${total}`;
+                return;
+            }
+
+            if (loadedCount === 0) {
+                status.textContent =
+                    "কোনো ছবি লোড হয়নি। images ফোল্ডার ও ফাইলের নাম পরীক্ষা করুন।";
+            } else if (failedCount > 0) {
+                status.textContent =
+                    `${loadedCount}টি ছবি লোড হয়েছে, ${failedCount}টি ছবি লোড হয়নি।`;
+            } else {
+                status.textContent =
+                    `সব ${loadedCount}টি ছবি সফলভাবে লোড হয়েছে।`;
+            }
+        }
+
+        function showLightbox(imageSource, imageAlt) {
+            lightboxImage.src = imageSource;
+            lightboxImage.alt = imageAlt;
+            lightbox.classList.add("open");
+            closeButton.focus();
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove("open");
+            lightboxImage.src = "";
+        }
+
+        closeButton.addEventListener("click", closeLightbox);
+
+        lightbox.addEventListener("click", function (event) {
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeLightbox();
+            }
+        });
+
+        imageNames.forEach(function (fileName) {
+            const card = document.createElement("article");
+            card.className = "photo-card";
+
+            const img = document.createElement("img");
+            img.alt = "স্মৃতির ছবি: " + fileName;
+            img.loading = "lazy";
+            img.decoding = "async";
+
+            // Netlify সাইটের root থেকে ছবির পাথ
+            img.src = "/images/" + encodeURIComponent(fileName);
+
+            const caption = document.createElement("div");
+            caption.className = "photo-name";
+            caption.textContent = fileName;
+
+            let finished = false;
+
+            img.addEventListener("load", function () {
+                if (finished) return;
+                finished = true;
+
+                loadedCount++;
+                updateStatus();
+            });
+
+            img.addEventListener("error", function () {
+                if (finished) return;
+                finished = true;
+
+                failedCount++;
+
+                const errorBox = document.createElement("div");
+                errorBox.className = "error";
+
+                const message = document.createElement("strong");
+                message.textContent = "ছবি লোড করা যায়নি";
+
+                const details = document.createElement("small");
+                details.textContent =
+                    "ফাইলের নাম ও পাথ পরীক্ষা করুন: /images/" + fileName;
+
+                errorBox.appendChild(message);
+                errorBox.appendChild(details);
+
+                img.replaceWith(errorBox);
+                updateStatus();
+
+                console.error(
+                    "Image failed to load:",
+                    window.location.origin + "/images/" + fileName
+                );
+            });
+
+            img.addEventListener("click", function () {
+                if (img.naturalWidth > 0) {
+                    showLightbox(img.src, img.alt);
+                }
+            });
 
             card.appendChild(img);
-            galleryElement.appendChild(card);
+            card.appendChild(caption);
+            gallery.appendChild(card);
         });
+
+        updateStatus();
     </script>
 
 </body>
